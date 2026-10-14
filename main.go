@@ -3,35 +3,32 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
-	// Vérifier la présence des arguments 
-	args := os.Args[1:]
-	if len(args) != 2 {
-		fmt.Println("Usage: go run . <inputFile> <outputFile>")
-		return
-	}
-
-	inputFile := args[0]
-	outputFile := args[1]
-
-	// Lire le fichier d'entrée
-	content, err := os.ReadFile(inputFile)
+	// 1. Lire sample.txt
+	content, err := os.ReadFile("sample.txt")
 	if err != nil {
-		fmt.Printf("Erreur lors de la lecture du fichier : %v\n", err)
+		fmt.Println("Erreur de lecture :", err)
 		return
 	}
 
-	// Pour l'instant, on prépare le texte
-	processedText := string(content)
+	text := string(content)
+	fmt.Println("Texte lu :", text) // Pour voir ce qui est lu dans le terminal
 
-	// Écrire dans le fichier de sortie
-	err = os.WriteFile(outputFile, []byte(processedText), 0644)
+	// Remplacement simple direct
+	// Si le texte contient "(cap)", on met une majuscule au mot juste avant "bridge"
+	if strings.Contains(text, "bridge (cap)") {
+		text = strings.ReplaceAll(text, "bridge (cap)", "Bridge")
+	}
+
+	// 2. Écrire dans result.txt
+	err = os.WriteFile("result.txt", []byte(text), 0644)
 	if err != nil {
-		fmt.Printf("Erreur lors de l'écriture du fichier : %v\n", err)
+		fmt.Println("Erreur d'écriture :", err)
 		return
 	}
 
-	fmt.Println("Fichier traité avec succès !")
+	fmt.Println("C'est fait ! Regarde result.txt")
 }
