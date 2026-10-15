@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -28,22 +29,44 @@ func main() {
 	text := string(content)
 	words := strings.Fields(text)
 
-	// 2. Parcourir les mots pour chercher (up), (low) ou (cap)
+	// 2. Parcourir les mots pour chercher les balises
 	for i := 0; i < len(words); i++ {
-		if i > 0 {
-			if words[i] == "(up)" {
+		word := words[i]
+
+		// Cas des balises simples : (up), (low), (cap)
+		if (word == "(up)" || word == "(low)" || word == "(cap)") && i > 0 {
+			if word == "(up)" {
 				words[i-1] = strings.ToUpper(words[i-1])
-				// Supprimer la balise de la liste
-				words = append(words[:i], words[i+1:]...)
-				i--
-			} else if words[i] == "(low)" {
+			} else if word == "(low)" {
 				words[i-1] = strings.ToLower(words[i-1])
-				words = append(words[:i], words[i+1:]...)
-				i--
-			} else if words[i] == "(cap)" {
+			} else if word == "(cap)" {
 				words[i-1] = capitalize(words[i-1])
-				words = append(words[:i], words[i+1:]...)
-				i--
+			}
+			// Supprimer la balise
+			words = append(words[:i], words[i+1:]...)
+			i--
+		} else if strings.HasPrefix(word, "(") && strings.HasSuffix(word, ")") {
+			// Cas des balises avec un nombre, ex: (up, 2)
+			contentTag := word[1 : len(word)-1] // Enlève les parenthèses -> "up, 2"
+			parts := strings.Split(contentTag, ",")
+			if len(parts) == 2 {
+				action := strings.TrimSpace(parts[0])
+				n, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+				if err == nil && n > 0 && i >= n {
+					// Appliquer l'action sur les n mots précédents
+					for j := i - n; j < i; j++ {
+						if action == "up" {
+							words[j] = strings.ToUpper(words[j])
+						} else if action == "low" {
+							words[j] = strings.ToLower(words[j])
+						} else if action == "cap" {
+							words[j] = capitalize(words[j])
+						}
+					}
+					// Supprimer la balise
+					words = append(words[:i], words[i+1:]...)
+					i--
+				}
 			}
 		}
 	}
